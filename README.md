@@ -276,7 +276,76 @@ Difficulté : Moyenne (~2 heures)
 ### **Atelier 2 : Choisir notre point de restauration**  
 Aujourd’hui nous restaurobs “le dernier backup”. Nous souhaitons **ajouter la capacité de choisir un point de restauration**.
 
-*..Décrir ici votre procédure de restauration (votre runbook)..*  
+
+### **Procédure de restauration (Runbook)**
+
+**1. Lister les backups disponibles**
+
+On commence par vérifier les fichiers présents dans le volume `/backup` :
+
+```bash
+kubectl -n pra exec -it deploy/flask -- ls -lh /backup
+```
+
+On identifie le fichier correspondant au point de restauration souhaité
+(ex : `app-1772117341.db`).
+
+---
+
+**2. Vérifier l’état des pods**
+
+```bash
+kubectl -n pra get pods
+```
+
+On s’assure que le pod est bien en état `Running` avant toute manipulation.
+
+---
+
+**3. Supprimer la base actuelle**
+
+On supprime la base active située dans `/data` :
+
+```bash
+kubectl -n pra exec -it deploy/flask -- rm -f /data/app.db
+```
+
+---
+
+**4. Restaurer le backup choisi**
+
+On copie le fichier sélectionné depuis `/backup` vers `/data` :
+
+```bash
+kubectl -n pra exec -it deploy/flask -- cp /backup/app-1772117341.db /data/app.db
+```
+
+---
+
+**5. Redémarrer l’application**
+
+Afin que l’application recharge correctement la base restaurée :
+
+```bash
+kubectl -n pra rollout restart deploy/flask
+kubectl -n pra rollout status deploy/flask
+```
+
+---
+
+**6. Vérification post-restauration**
+
+On vérifie que l’application fonctionne correctement :
+
+```bash
+curl http://localhost:8080/count
+curl http://localhost:8080/status
+```
+
+On contrôle que le nombre d’événements correspond bien au point de restauration sélectionné.
+
+---
+
   
 ---------------------------------------------------
 Evaluation
