@@ -231,27 +231,33 @@ Faites preuve de pédagogie et soyez clair dans vos explications et procedures d
 **Exercice 1 :**  
 Quels sont les composants dont la perte entraîne une perte de données ?  
   
-*..Répondez à cet exercice ici..*
+*Les composants dont la perte entraîne une perte de données sont le PVC et le stockage physique du noeud Kubernetes qui héberge ce volume*
 
 **Exercice 2 :**  
 Expliquez nous pourquoi nous n'avons pas perdu les données lors de la supression du PVC pra-data  
   
-*..Répondez à cet exercice ici..*
+*Nous utilisions un CronJob qui effectuait des backups régulières de la BD et les stockait sur un autre volume persistant (pra-backup), donc la base a pu être restaurée à partir des sauvegardes*
 
 **Exercice 3 :**  
 Quels sont les RTO et RPO de cette solution ?  
   
-*..Répondez à cet exercice ici..*
+*Le RTO est de quelques minutes, cela correspond au temps nécessaire pour restaurer les données depuis le backup et redémarrer l'appli. Le RPO est d'une minute si on se base sur le fait qu'un backup est effectué toutes les minutes.*
 
 **Exercice 4 :**  
 Pourquoi cette solution (cet atelier) ne peux pas être utilisé dans un vrai environnement de production ? Que manque-t-il ?   
   
-*..Répondez à cet exercice ici..*
+*En prod, l'un des points les plus important est la disponibilité. Cette solution, étant très simplifiée, ne garantit pas de disponibilité suffisante pour un environnement de production. Ce qu'il manque principalement : un stockage haute dispo qui ne dépend pas du noeud local, comme ici, une base de données adaptée à la prod (et pas SQLite), une réplication de données en temps réel, un serveur de monitoring idéalement (comme LibreNMS ou ZABBIX) qui permettrait la supervision des équipements et la mise en place d'un système d'alertes, des sauvegardes chiffrées et automatisées vers un serveur FTP (ou SFTP), avec une gestion des accès (LDAP par exemple), et des documentations et/ou des procédures comme un plan de restauration par exemple. En somme, construire une infrastructure robuste.*
   
 **Exercice 5 :**  
 Proposez une archtecture plus robuste.   
   
-*..Répondez à cet exercice ici..*
+*Comme expliqué plus haut, une architecture plus robuste serait :
+1) Déployer Flask sur Kubernetes avec un Load Balancer pour assurer la continuité de service
+2) Utiliser PostgreSQL ou MySQL
+3) Adopter un stockage cloud ou physique plus persistant, distribué et tolérant aux pannes (Azure Disk par exemple ?)
+4) Mettre en place des sauvegardes automatisées et chiffrées sur un serveur SFTP
+5) Mettre en place une superviision et des alertes (LibreNMS, Prometheus + Grafana + Alertmanager) et centraliser les logs (Loki par exemple)
+6) Mettre en plac des NetworkPolicies *
 
 ---------------------------------------------------
 Séquence 6 : Ateliers  
